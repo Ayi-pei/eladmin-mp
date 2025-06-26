@@ -1,26 +1,13 @@
-## Running with Docker
+## Running the Project with Docker
 
-This project provides a full Docker-based setup for both the frontend (Vue.js) and backend (Spring Boot) applications, along with MySQL and Redis services. The configuration is defined in the `compose.yaml` file and custom Dockerfiles for each service.
+This project provides a full Docker-based setup for both the backend (Java Spring Boot) and frontend (Vue.js), along with MySQL and Redis services. The configuration is managed via the included `compose.yaml` file.
 
-### Project-Specific Docker Requirements
+### Project-Specific Requirements
 
-- **Frontend (`eladmin-web`)**
-  - Node.js version: `22.13.1-slim` (as specified by `NODE_VERSION` build arg)
-  - Uses `serve` to host the built static files
-  - Exposes port **8013**
-
-- **Backend (`eladmin/eladmin-system`)**
-  - Java version: Eclipse Temurin JDK 17
-  - Exposes port **8080**
-
-- **Database (`mysql`)**
-  - Uses the latest MySQL image
-  - Exposes port **3306**
-  - Default credentials (see below)
-
-- **Cache (`redis`)**
-  - Uses the latest Redis image
-  - Exposes port **6379**
+- **Java Backend**: Uses Eclipse Temurin JDK 17 (see `eladmin/eladmin-system/Dockerfile`).
+- **Frontend**: Uses Node.js version 22.13.1 (see `eladmin-web/Dockerfile`).
+- **MySQL**: Uses the official `mysql:latest` image, with custom configuration and initialization SQL scripts.
+- **Redis**: Uses the official `redis:latest` image.
 
 ### Environment Variables
 
@@ -29,50 +16,47 @@ This project provides a full Docker-based setup for both the frontend (Vue.js) a
   - `MYSQL_DATABASE=eladmin`
   - `MYSQL_USER=eladmin`
   - `MYSQL_PASSWORD=eladmin`
-
-- **Frontend**:
-  - You may provide a `.env.production` file in `eladmin-web` for custom environment variables (uncomment `env_file` in the compose file if needed).
+- **Backend and Frontend**: No required environment variables by default, but you can uncomment and set `env_file` in the compose file for custom configuration.
 
 ### Build and Run Instructions
 
-1. **Clone the repository and ensure Docker and Docker Compose are installed.**
-
-2. **(Optional) Initialize the database:**
-   - To auto-initialize MySQL with the provided SQL files, uncomment the `volumes` section for the `mysql` service in `compose.yaml`:
-     ```yaml
-     volumes:
-       - ./sql:/docker-entrypoint-initdb.d
-     ```
-
-3. **Build and start all services:**
+1. **Ensure Docker and Docker Compose are installed.**
+2. **Build and start all services:**
    ```sh
    docker compose up --build
    ```
-   This will build the frontend and backend images and start all services.
+   This will build the backend and frontend images and start all services (backend, frontend, MySQL, Redis) as defined in `compose.yaml`.
 
-4. **Access the services:**
-   - **Frontend (Vue.js):** http://localhost:8013
+3. **Access the services:**
    - **Backend (Spring Boot API):** http://localhost:8080
-   - **MySQL:** localhost:3306 (user: `eladmin`, password: `eladmin`)
+   - **Frontend (Vue.js app):** http://localhost:8013
+   - **MySQL:** localhost:3306 (credentials as above)
    - **Redis:** localhost:6379
 
-### Special Configuration Notes
+### Special Configuration
 
-- The frontend (`eladmin-web`) is built and served as static files using the `serve` package.
-- The backend (`eladmin-system`) is built with Maven (using the Maven wrapper) and runs as a Spring Boot JAR.
-- Both frontend and backend run as non-root users inside their containers for improved security.
-- The frontend is configured to depend on the backend, and the backend depends on MySQL and Redis.
-- All services are connected via the `eladmin-net` Docker network.
+- **MySQL**:
+  - Uses a custom configuration file: `./mysql-config/my.cnf`
+  - Initializes with SQL scripts: `./sql/eladmin.sql` and `./sql/quartz.sql`
+- **Frontend**:
+  - The Vue.js app is built and served as static files using the `serve` package on port 8013.
+- **Backend**:
+  - Runs as a non-root user for security.
+  - JVM is configured for container environments with `JAVA_OPTS`.
 
-### Exposed Ports Summary
+### Ports Exposed
 
-| Service                | Container Port | Host Port |
-|------------------------|---------------|-----------|
-| Frontend (eladmin-web) | 8013          | 8013      |
-| Backend (eladmin-system)| 8080         | 8080      |
-| MySQL                  | 3306          | 3306      |
-| Redis                  | 6379          | 6379      |
+| Service                | Host Port | Container Port | Description                |
+|------------------------|-----------|---------------|----------------------------|
+| Java Backend           | 8080      | 8080          | Spring Boot API            |
+| Frontend (Vue.js)      | 8013      | 8013          | Static web app             |
+| MySQL                  | 3306      | 3306          | Database                   |
+| Redis                  | 6379      | 6379          | Cache/Session store        |
 
----
+### Notes
 
-_This section was updated to reflect the current Docker-based setup for this project. Please refer to the `compose.yaml` and Dockerfiles for further customization options._
+- If you need to customize environment variables for the backend or frontend, create `.env` or `.env.production` files and uncomment the `env_file` lines in `compose.yaml`.
+- Data for MySQL and Redis is persisted using Docker volumes (`mysql_data`, `redis_data`).
+- Health checks are configured for MySQL and Redis to ensure service readiness.
+
+For more details on Docker setup, see `DOCKER_SETUP.md` in the project root.

@@ -1,45 +1,48 @@
-# 1. Version control
+# Version control
 .git/
 .gitignore
 .svn/
 .hg/
 
-# 2. IDE/editor files
+# IDE/editor settings
 .idea/
 .vscode/
 *.swp
 *.swo
 
-# 3. Node.js/JavaScript
+# Node.js dependencies and artifacts
 node_modules/
 npm-debug.log
 yarn-debug.log
 yarn-error.log
 
-# 4. Java
+# Java build outputs
 **/target/
 *.class
 
-# 5. Build outputs
-/dist/
-/build/
-/out/
+# JavaScript/TypeScript build outputs
+dist/
+build/
+out/
 
-# 6. Test files and directories
-/test/
-/tests/
-**/test/
-**/tests/
+# Test and coverage artifacts
+test/
+tests/
+coverage/
 *.test.js
 *.spec.js
-*.test.ts
-*.spec.ts
 
-# 7. Debug and log files
+# Logs and debug files
 *.log
 debug/
 
-# 8. Environment and secrets
+# Temporary and cache files
+tmp/
+temp/
+*.tmp
+.cache/
+
+# Environment and secrets
 .env*
 *.env
 *.pem
@@ -48,42 +51,33 @@ debug/
 config.local.*
 *.local.yml
 
-# 9. Temporary and local files
-tmp/
-temp/
-*.tmp
-.local/
-local/
-
-# 10. Documentation and backups
-docs/
+# Documentation and markdown
 *.md
 README*
-*.bak
-*.bak.*
+docs/
 
-# 11. Docker and Compose files
+# Docker and Compose files
 Dockerfile*
 docker-compose*
 compose.yaml*
 
-# 12. Miscellaneous
+# Backup and old files
+*.bak
+*.old
+
+# Project-specific
+.local/
+local/
+
+# Miscellaneous
 *.DS_Store
 Thumbs.db
 
-# 13. Project-specific: SQL scripts (if not needed in image)
-sql/
-
-# 14. Exclude backup .dockerignore files
-.dockerignore.bak*
-
-# 15. Exclude editor config
-*.editorconfig
-
-# 16. Exclude license files
-LICENSE
-
-# 17. Exclude YAML config backups
-*.yml.bak
-
-# End of .dockerignore
+# Exclude lock files and build tools (do NOT ignore these)
+# !package-lock.json
+# !yarn.lock
+# !pnpm-lock.yaml
+# !.mvnw
+# !.gradlew
+# !.mvn/
+# !.gradle/
