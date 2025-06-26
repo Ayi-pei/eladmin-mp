@@ -28,6 +28,8 @@ yarn-error.log
 # 6. Test files and directories
 /test/
 /tests/
+**/test/
+**/tests/
 *.test.js
 *.spec.js
 *.test.ts
@@ -53,41 +55,35 @@ temp/
 .local/
 local/
 
-# 10. Documentation and markdown
+# 10. Documentation and backups
 docs/
 *.md
 README*
+*.bak
+*.bak.*
 
 # 11. Docker and Compose files
 Dockerfile*
 docker-compose*
 compose.yaml*
 
-# 12. Backup and old files
-*.bak
-*.old
-
-# 13. Miscellaneous
+# 12. Miscellaneous
 *.DS_Store
 Thumbs.db
 
-# 14. Project-specific exclusions
-/sql/
+# 13. Project-specific: SQL scripts (if not needed in image)
+sql/
+
+# 14. Exclude backup .dockerignore files
+.dockerignore.bak*
+
+# 15. Exclude editor config
+*.editorconfig
+
+# 16. Exclude license files
 LICENSE
 
-# 15. Exclude editor config (optional, keep if not needed)
-.editorconfig
-
-# 16. Exclude coverage and cache (for completeness)
-.coverage
-.pytest_cache/
-
-# 17. Exclude files with no extension (if not needed)
-# (Commented out, as some may be needed)
-# *.
-
-# 18. Exclude other package managers (if present)
-# pnpm-debug.log
-# .pnpm-debug.log
+# 17. Exclude YAML config backups
+*.yml.bak
 
 # End of .dockerignore

@@ -1,72 +1,102 @@
-networks:
-  eladmin-net:
-    driver: bridge
-
 services:
   js-eladmin-web:
     build:
       context: ./eladmin-web
+      dockerfile: Dockerfile
     image: js-eladmin-web:latest
     container_name: js-eladmin-web
     restart: unless-stopped
     init: true
-    networks:
-      - eladmin-net
+    # env_file: ./.env.production  # Uncomment if .env.production exists for frontend environment variables
     ports:
       - "8013:8013"
     depends_on:
       - java-eladmin-system
-    # env_file: ./.env.production  # Uncomment if .env.production exists in eladmin-web
-    # The frontend is served as static files using 'serve' on port 8013
+    networks:
+      - eladmin-net
+    # The frontend is a static site served by 'serve' on port 8013
 
   java-eladmin-system:
     build:
       context: ./eladmin/eladmin-system
+      dockerfile: Dockerfile
     image: java-eladmin-system:latest
     container_name: java-eladmin-system
     restart: unless-stopped
-    networks:
-      - eladmin-net
     ports:
       - "8080:8080"
     depends_on:
-      - mysql
-      - redis
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    environment:
+      # Database connection settings
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: eladmin
+      DB_USER: eladmin
+      DB_PWD: eladmin
+      # Redis connection settings
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_DB: 0
+      REDIS_PWD: ""
+    networks:
+      - eladmin-net
     # The backend is a Spring Boot app running on port 8080
 
   mysql:
-    image: mysql:latest
+    image: mysql:5.7
     container_name: mysql
     restart: unless-stopped
-    networks:
-      - eladmin-net
-    ports:
-      - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: eladmin
       MYSQL_DATABASE: eladmin
       MYSQL_USER: eladmin
       MYSQL_PASSWORD: eladmin
+      # MySQL 5.7 specific settings
+      MYSQL_CHARSET: utf8mb4
+      MYSQL_COLLATION: utf8mb4_general_ci
+    ports:
+      # Only expose MySQL port to localhost for security
+      - "127.0.0.1:3306:3306"
+    networks:
+      - eladmin-net
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-peladmin"]
       interval: 10s
       timeout: 5s
-      retries: 5
+      retries: 10
+      start_period: 30s
     volumes:
-      # Uncomment the following line to auto-initialize the database with provided SQL files
-      # - ./sql:/docker-entrypoint-initdb.d
+      # Initialize the database with provided SQL files
+      - ./sql:/docker-entrypoint-initdb.d
+      # Persist MySQL data
+      - mysql_data:/var/lib/mysql
+      # MySQL 5.7 configuration
+      - ./mysql-config:/etc/mysql/conf.d
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci --sql_mode=STRICT_TRANS_TABLES,NO_ZERO_DATE,NO_ZERO_IN_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION
 
   redis:
     image: redis:latest
     container_name: redis
     restart: unless-stopped
+    ports:
+      # Only expose Redis port to localhost for security
+      - "127.0.0.1:6379:6379"
     networks:
       - eladmin-net
-    ports:
-      - "6379:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
-    # Redis is used for caching and session management
+
+networks:
+  eladmin-net:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local
