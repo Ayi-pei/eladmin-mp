@@ -6,12 +6,12 @@ ARG NODE_VERSION=22.13.1
 FROM node:${NODE_VERSION}-slim AS builder
 WORKDIR /app
 
-# Copy only package.json for dependency install
+# Install build dependencies only (no .env, no .git, no lock files)
 COPY --link package.json ./
 # If you use package-lock.json, uncomment the next line
 # COPY --link package-lock.json ./
 
-# Install dependencies with cache
+# Use npm ci for reproducible builds, cache npm
 RUN --mount=type=cache,target=/root/.npm \
     npm ci
 

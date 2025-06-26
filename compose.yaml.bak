@@ -1,80 +1,69 @@
 services:
-  java-eladmin-system:
+  java-eladmin:
     build:
-      context: ./eladmin-system
-      dockerfile: ../eladmin-systemDockerfile
-    image: java-eladmin-system:latest
-    container_name: java-eladmin-system
+      context: ./eladmin
+      dockerfile: ../eladminDockerfile
+    container_name: java-eladmin
     restart: unless-stopped
-    init: true
-    ports:
-      - "8080:8080"  # Spring Boot default port
     depends_on:
-      - mysql
       - redis
+      - mysql
     networks:
-      - eladmin
-    # env_file: .env  # Uncomment and set if you have a .env file for backend
+      - eladmin-net
+    ports:
+      - "8080:8080" # Spring Boot backend
+    # env_file: ./.env  # Uncomment if .env file exists in ./eladmin
 
-  js-eladmin-web:
+  javascript-eladmin-web:
     build:
       context: ./eladmin-web
       dockerfile: ../eladmin-webDockerfile
-    image: js-eladmin-web:latest
-    container_name: js-eladmin-web
+    container_name: javascript-eladmin-web
     restart: unless-stopped
     init: true
-    ports:
-      - "8081:8080"  # Expose frontend on 8081, mapped to internal 8080
-    depends_on:
-      - java-eladmin-system
     networks:
-      - eladmin
-    # env_file: .env  # Uncomment if .env file exists in eladmin-web
+      - eladmin-net
+    ports:
+      - "8013:8013" # Vue frontend static server
+    env_file: ./.env # Uncomment if .env file exists in ./eladmin-web
+
+  redis:
+    image: redis:latest
+    container_name: redis
+    restart: unless-stopped
+    networks:
+      - eladmin-net
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # No persistence configured by default; add volumes if needed
 
   mysql:
     image: mysql:latest
     container_name: mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: eladmin
-      MYSQL_DATABASE: eladmin
-      MYSQL_USER: eladmin
-      MYSQL_PASSWORD: eladmin
+      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: eladmin_mp
+    networks:
+      - eladmin-net
     ports:
       - "3306:3306"
-    volumes:
-      - mysql_data:/var/lib/mysql
-      - ./sql/eladmin.sql:/docker-entrypoint-initdb.d/eladmin.sql:ro
-      - ./sql/quartz.sql:/docker-entrypoint-initdb.d/quartz.sql:ro
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       timeout: 5s
       retries: 5
-    networks:
-      - eladmin
-
-  redis:
-    image: redis:latest
-    container_name: redis
-    restart: unless-stopped
-    ports:
-      - "6379:6379"
     volumes:
-      - redis_data:/data
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-    networks:
-      - eladmin
+      - mysql-data:/var/lib/mysql
 
 networks:
-  eladmin:
+  eladmin-net:
     driver: bridge
 
 volumes:
-  mysql_data:
-  redis_data:
+  mysql-data:

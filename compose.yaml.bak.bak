@@ -1,7 +1,3 @@
-networks:
-  eladmin-net:
-    driver: bridge
-
 services:
   js-eladmin-web:
     build:
@@ -10,14 +6,14 @@ services:
     container_name: js-eladmin-web
     restart: unless-stopped
     init: true
+    # env_file: ./.env.production  # Uncomment if .env.production file exists
+    ports:
+      - "8013:8013"  # Vue app static server
     networks:
       - eladmin-net
-    ports:
-      - "8013:8013"
     depends_on:
       - java-eladmin-system
-    # env_file: ./.env.production  # Uncomment if .env.production exists in eladmin-web
-    # The frontend is served as static files using 'serve' on port 8013
+    # The frontend may need to connect to the backend API at 8080
 
   java-eladmin-system:
     build:
@@ -25,48 +21,49 @@ services:
     image: java-eladmin-system:latest
     container_name: java-eladmin-system
     restart: unless-stopped
+    ports:
+      - "8080:8080"  # Spring Boot backend
     networks:
       - eladmin-net
-    ports:
-      - "8080:8080"
     depends_on:
       - mysql
       - redis
-    # The backend is a Spring Boot app running on port 8080
 
   mysql:
     image: mysql:latest
-    container_name: mysql
+    container_name: eladmin-mysql
     restart: unless-stopped
-    networks:
-      - eladmin-net
-    ports:
-      - "3306:3306"
     environment:
       MYSQL_ROOT_PASSWORD: eladmin
       MYSQL_DATABASE: eladmin
       MYSQL_USER: eladmin
       MYSQL_PASSWORD: eladmin
+    ports:
+      - "3306:3306"
+    networks:
+      - eladmin-net
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       timeout: 5s
       retries: 5
-    volumes:
-      # Uncomment the following line to auto-initialize the database with provided SQL files
-      # - ./sql:/docker-entrypoint-initdb.d
+    # volumes:
+    #   - ./sql:/docker-entrypoint-initdb.d  # Uncomment to initialize DB with provided SQL
 
   redis:
     image: redis:latest
-    container_name: redis
+    container_name: eladmin-redis
     restart: unless-stopped
-    networks:
-      - eladmin-net
     ports:
       - "6379:6379"
+    networks:
+      - eladmin-net
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
-    # Redis is used for caching and session management
+
+networks:
+  eladmin-net:
+    driver: bridge

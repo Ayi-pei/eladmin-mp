@@ -1,37 +1,43 @@
-# Version control
+# 1. Version control
 .git/
 .gitignore
 .svn/
 .hg/
 
-# IDE/editor files
+# 2. IDE/editor files
 .idea/
 .vscode/
 *.swp
 *.swo
 
-# Node.js dependencies and build artifacts
+# 3. Node.js/JavaScript
 node_modules/
-dist/
-build/
-out/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
 
-# Java build artifacts
+# 4. Java
 **/target/
 *.class
 
-# Test and debug artifacts
-test/
-tests/
+# 5. Build outputs
+/dist/
+/build/
+/out/
+
+# 6. Test files and directories
+/test/
+/tests/
+*.test.js
+*.spec.js
+*.test.ts
+*.spec.ts
+
+# 7. Debug and log files
 *.log
 debug/
 
-# Temporary and cache files
-*.tmp
-tmp/
-temp/
-
-# Environment and secrets
+# 8. Environment and secrets
 .env*
 *.env
 *.pem
@@ -39,26 +45,49 @@ temp/
 *.crt
 config.local.*
 *.local.yml
+
+# 9. Temporary and local files
+tmp/
+temp/
+*.tmp
 .local/
+local/
 
-# Documentation
-README*
-*.md
+# 10. Documentation and markdown
 docs/
+*.md
+README*
 
-# Docker and Compose files
+# 11. Docker and Compose files
 Dockerfile*
 docker-compose*
-compose.yaml
+compose.yaml*
 
-# Project-specific
-eladmin.sql
-quartz.sql
-
-# Miscellaneous
+# 12. Backup and old files
 *.bak
 *.old
 
-# Exclude lock files and build scripts from ignore (do NOT add them here)
-#
+# 13. Miscellaneous
+*.DS_Store
+Thumbs.db
+
+# 14. Project-specific exclusions
+/sql/
+LICENSE
+
+# 15. Exclude editor config (optional, keep if not needed)
+.editorconfig
+
+# 16. Exclude coverage and cache (for completeness)
+.coverage
+.pytest_cache/
+
+# 17. Exclude files with no extension (if not needed)
+# (Commented out, as some may be needed)
+# *.
+
+# 18. Exclude other package managers (if present)
+# pnpm-debug.log
+# .pnpm-debug.log
+
 # End of .dockerignore
